@@ -1,1 +1,27 @@
-{"directory_path": "C:\\WorkSpace\\PythonProjects"}
+{
+    "directory_path": null,
+    "commands": [
+        {
+            "command": "python -m venv venv",
+            "status": "setting_venv"
+        },
+        {
+            "command": "venv\\Scripts\\activate",
+            "status": null
+        },
+        {
+            "command": "{directory}\\venv\\scripts\\python.exe -m pip install --upgrade pip",
+            "status": "upd_pip"
+        },
+        {
+            "command": "{directory}\\venv\\scripts\\python.exe -m pip install {packages}",
+            "status": "load_libs"
+        }
+    ],
+    "loading_statuses": {
+        "creating": "Cоздаю директорию проекта...",
+        "setting_venv": "Настраиваю виртуальное окружение...",
+        "upd_pip": "Обновляю pip...",
+        "load_libs": "Загружаю библиотеки..."
+    }
+}
