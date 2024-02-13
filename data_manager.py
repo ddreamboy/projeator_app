@@ -23,9 +23,12 @@ def load_data(filename: str, *, var_name=None):
             var = data.get(var_name)
             return var
         else:
-            with open(data_path, 'r', encoding='utf-8') as f:
-                data = json.load(f)
-            return data
+            try:
+                with open(data_path, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                return data
+            except json.JSONDecodeError as e:
+                return None
     else:
         return None
 
@@ -48,7 +51,7 @@ def update_data(data_upd: dict, filename: str):
     '''
     data: dict = load_data(filename)
     if data:
-        data.update(data_upd)
+        data.get(list(data_upd.keys())[0]).update(list(data_upd.values())[0])
     else:
         data = data_upd
     save_data(data, filename)

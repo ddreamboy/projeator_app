@@ -1,5 +1,5 @@
 import flet as ft
-from data_manager import (load_data, update_data)
+from data_manager import (load_data, update_data, get_appdata_path)
 
 
 def main(page: ft.Page):
@@ -8,33 +8,67 @@ def main(page: ft.Page):
     page.window_height = 528
     page.window_resizable = False
 
-    settings = load_data('settings.json', var_name='create_settings')
-    if settings:
-        directory_path = settings.get('directory_path')
 
-    def set_checkbox_value(name: str, *, e: ft.Checkbox = None):
-        data_value = None
-        print(settings)
-        if settings:
-            data_value = settings.get(name)
-            print(data_value)
-        elif data_value:
-            if e:
-                data_upd = dict(create_settings={'name': data_value})
-                update_data(data_upd, 'settings.json')
-            else:
-                return data_value
+    settings = load_data('settings.json', var_name='create_settings')
+
+    checkboxes = {}
+
+    def save_checkbox_value(e):
+        for key, checkbox in checkboxes.items():
+            data_value = settings.get(key)
+            if checkbox.value != data_value:
+                data_upd = dict(create_settings={key: checkbox.value})
+            update_data(data_upd, 'settings.json')
+    
+    def add_checkbox(name: str, *, label: str=None):
+        checkbox = ft.Checkbox(
+            label=label,
+            on_change=save_checkbox_value
+        )
+        checkboxes.update({name: checkbox})
+        
+    def create_project():
+        pass
+
+    def on_dialog_result(e: ft.FilePickerResultEvent):
+        if e.path:
+            path_text.value = e.path
+            add_path_bttn.text = 'Изменить'
+            page.update()
+            data_upd = dict(create_settings={'directory_path': path_text.value})
+            update_data(data_upd, 'settings.json')
+
+
+    file_picker = ft.FilePicker(on_result=on_dialog_result)
+    page.overlay.append(file_picker)
+    add_path_bttn = ft.ElevatedButton(text="Выбрать директорию",
+                                    style=ft.ButtonStyle(
+                                        shape=ft.StadiumBorder()),
+                                    on_click=lambda _:
+                                    file_picker.get_directory_path())
+    add_project_bttn = ft.FloatingActionButton(
+                        text="Создать проект",
+                        icon=ft.icons.ADD_ROUNDED,
+                        height=30,
+                        on_click=lambda e:create_project())
+    path_text = ft.Text()
+    path_setting = ft.Row(
+        [
+            ft.Text('Расположение проектов:'), path_text, add_path_bttn
+        ],
+    )
+
+    add_checkbox('pip_setting', label='Обновлять pip')
+    add_checkbox('main_setting', label='Создавать main.py')
+    add_checkbox('open_setting', label='Открывать директорию проекта после создания')
+
 
     def route_change(index):
         if index == 0:
             projects_bar = ft.Row(
                 [
                     ft.Text('Мои проекты'),
-                    ft.Row([ft.FloatingActionButton(
-                        text="Создать проект",
-                        icon=ft.icons.ADD_ROUNDED,
-                        height=30,
-                        on_click=lambda e: load_data('gg.json'))],
+                    ft.Row([add_project_bttn],
                         alignment=ft.MainAxisAlignment.END,
                         expand=1)
                 ],
@@ -92,64 +126,35 @@ def main(page: ft.Page):
             page_content.controls.append(body)
             page.route = '/projects'
             page.update()
+
         if index == 1:
-
-            def on_dialog_result(e: ft.FilePickerResultEvent):
-                if e.path:
-                    path_text.value = e.path
-                    add_path_bttn.text = 'Изменить'
+            for key, checkbox in checkboxes.items():
+                setting = settings.get(key)
+                if setting:
+                    checkbox.value = setting
                     page.update()
-            file_picker = ft.FilePicker(on_result=on_dialog_result)
-            page.overlay.append(file_picker)
-            add_path_bttn = ft.ElevatedButton(text="Выбрать директорию",
-                                              style=ft.ButtonStyle(
-                                                  shape=ft.StadiumBorder()),
-                                              on_click=lambda _:
-                                              file_picker.get_directory_path())
-            path_text = ft.Text()
-            path_setting = ft.Row(
-                [
-                    ft.Text('Расположение проектов:'), path_text, add_path_bttn
-                ],
-            )
 
-            pip_setting = ft.Row(
-                [
-                    ft.Checkbox(
-                        label='Обновлять pip',
-                        value=set_checkbox_value('pip_setting'),
-                        on_change=lambda e: set_checkbox_value('pip_setting',
-                                                               e=e)
-                        )
-                ]
-                )
-            main_setting = ft.Row(
-                [ft.Checkbox(label='Создавать main.py')]
-                )
-            open_setting = ft.Row(
-                [ft.Checkbox(
-                    label='Открывать директорию проекта после создания')]
-                )
             body = ft.Column(
                 [
                     ft.Text('Создание проектов'),
                     ft.Divider(height=2),
-                    path_setting,
-                    pip_setting,
-                    main_setting,
-                    open_setting,
-                    ft.Text(),
-                    ft.Text('Интерфейс'),
-                    ft.Divider(height=2),
+                    ft.Row([path_setting]),
                 ], alignment=ft.MainAxisAlignment.START,
                 expand=True
             )
+            body.controls = body.controls + list(checkboxes.values()) + [ft.Text(), ft.Text('Интерфейс'), ft.Divider(height=2)]
             if len(page_content.controls) > 2:
                 page_content.controls.pop()
             page_content.controls.append(body)
             page.route = '/settings'
+            if settings:
+                directory_path = settings.get('directory_path') 
+                if directory_path:
+                    path_text.value = directory_path
+                    add_path_bttn.text = 'Изменить'
             page.update()
 
+    
     rail = ft.NavigationRail(
         selected_index=0,
         label_type=ft.NavigationRailLabelType.ALL,
