@@ -12,13 +12,13 @@ def main(page: ft.Page):
     page.overlay.append(file_picker)
 
     builder()
-
+    
     def route_change(index):
         if index == 0:
             top_bar = ft.Row(
                 [
                     texts['projects_MyProjects'],
-                    ft.Row([buttons['add_project_bttn']],
+                    ft.Row([add_project_bttn],
                            alignment=ft.MainAxisAlignment.END,
                            expand=1)
                 ],
@@ -95,9 +95,48 @@ def main(page: ft.Page):
         on_change=lambda e: route_change(e.control.selected_index),
     )
 
+    def close_dlg(e):
+        dlg_modal.open = False
+        page.update()
+
+    dd = ft.Dropdown(
+        options=[
+            ft.dropdown.Option('_app'),
+            ft.dropdown.Option('_bot'),
+            ft.dropdown.Option('_proj'),
+        ]
+    )
+    dlg_modal = ft.AlertDialog(
+        title=ft.Text('Создание проекта'),
+        content=ft.Row(
+            [
+                ft.TextField(label='Введи название проекта'),
+                dd
+            ]),
+        actions=[
+            ft.Row([ft.TextButton('Создать', on_click=close_dlg)],
+                           alignment=ft.MainAxisAlignment.END,
+                           expand=1),
+        ]
+    )
+
+
+    def open_dlg_modal(e):
+        page.dialog = dlg_modal
+        dlg_modal.open = True
+        page.update()
+
+
     page_content = ft.Row(
         controls=[rail, ft.VerticalDivider(width=1)],
         expand=True
+    )
+    
+    add_project_bttn = ft.FloatingActionButton(
+        text='Создать проект',
+        icon=ft.icons.ADD_ROUNDED,
+        height=30,
+        on_click=open_dlg_modal
     )
 
     route_change(0)
