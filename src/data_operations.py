@@ -2,18 +2,20 @@ import json
 import os
 
 
-def get_appdata_path(*, appdata_path=None) -> str:
-    app_name = 'Projeator'
-    if not appdata_path:
-        appdata_path = os.getenv('APPDATA')
+def make_dir(dir_path):
+    if not os.path.exists(dir_path):
+        os.makedirs(dir_path)
+
+
+def get_appdata_path(app_name='MyApp') -> str:
+    appdata_path = os.getenv('APPDATA')
     project_data_path = os.path.join(appdata_path, 'LocalLow', 'ddb_apps',
                                      app_name)
-    if not os.path.exists(project_data_path):
-        os.makedirs(project_data_path)
+    make_dir(project_data_path)
     return project_data_path
 
 
-def load_data(filename: str, *, var_name: str = None):
+def load_data(filename: str):
     '''
     Функция загрузки данных
 
@@ -22,23 +24,12 @@ def load_data(filename: str, *, var_name: str = None):
         var_name (str): Имя конкретной переменной для загрузки.
 
     '''
-    project_data_path = get_appdata_path()
+    project_data_path = get_appdata_path(app_name='ProjCreator')
     data_path = os.path.join(project_data_path, filename)
     if os.path.exists(data_path):
-        if var_name:
-            with open(data_path, 'r', encoding='utf-8') as f:
-                data: dict = json.load(f)
-            var = data.get(var_name)
-            return var
-        else:
-            try:
-                with open(data_path, 'r', encoding='utf-8') as f:
-                    data = json.load(f)
-                return data
-            except json.JSONDecodeError:
-                return None
-    else:
-        return None
+        with open(data_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        return data
 
 
 def save_data(data: dict, filename: str):
@@ -50,13 +41,13 @@ def save_data(data: dict, filename: str):
         filenam (str): Имя файла сохранения.
 
     '''
-    project_data_path = get_appdata_path()
+    project_data_path = get_appdata_path(app_name='ProjCreator')
     data_path = os.path.join(project_data_path, filename)
     with open(data_path, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
 
 
-def update_data(data_upd: dict, filename: str, *, specific_key: str = None):
+def update_data(data_upd: dict, filename: str):
     '''
     Функция обновления данных
 
@@ -67,10 +58,27 @@ def update_data(data_upd: dict, filename: str, *, specific_key: str = None):
 
     '''
     data: dict = load_data(filename)
-    if specific_key:
-        specific_data: dict = data.get(specific_key)
-        specific_data.update(data_upd)
-        data.update({specific_key: specific_data})
-    else:
-        data = data_upd
+    data.update(data_upd)
+    save_data(data, filename)
+
+
+def update_create_settings(setting: str, value, filename: str):
+    '''
+    Функция обновления данных
+
+    Args:
+        data_upd (dict): Данные для обновления.
+        filenam (str): Имя файла обновления.
+        specific_key (str): Ключ для доступа к конкретной группе настроек.
+
+    '''
+    data: dict = load_data(filename)
+    try:
+        data['create_settings'][setting] = value
+    except Exception:
+        data = {
+            'create_settings': {
+                setting: value
+            }
+        }
     save_data(data, filename)
