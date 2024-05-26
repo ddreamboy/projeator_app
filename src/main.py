@@ -1,5 +1,6 @@
 from app_layout import AppLayout
 import flet as ft
+import pyautogui
 
 
 class ProjCreatorApp(ft.UserControl):
@@ -48,6 +49,9 @@ def main(page: ft.Page):
     page.title = "ProjCreator"
     page.window_width = 816
     page.window_height = 540
+    screen_width, screen_height = pyautogui.size()
+    page.window_top = (screen_height / 2) - (page.window_height / 1.5)
+    page.window_left = (screen_width / 2) - (page.window_width / 2)
     page.window_resizable = False
     app = ProjCreatorApp(page)
     page.add(app)
