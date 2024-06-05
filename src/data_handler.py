@@ -184,44 +184,47 @@ def create_main_py(project_path: str):
     with open(f'{project_path}\\src\\main.py', 'w'):
         pass
 
-    with open(f'{project_path}\\src\\autopep.py', 'w') as f:
-        f.write('''
-            import os
-            import subprocess
-            from pathlib import Path
+    with open(f'{project_path}\\src\\_autopep.py', 'w') as f:
+        f.write('''import os
+import subprocess
+from pathlib import Path
 
-            def format_with_autopep8(file_path):
-                command = ['autopep8', '--in-place', '--aggressive', file_path]
-                subprocess.run(command, check=True)
 
-            def format_with_black(file_path):
-                command = ['black', file_path]
-                subprocess.run(command, check=True)
+def format_with_autopep8(file_path):
+    command = ['autopep8', '--in-place', '--aggressive', file_path]
+    subprocess.run(command, check=True)
 
-            def format_python_file(file_path):
-                if not os.path.exists(file_path):
-                    print(f'File not found: {file_path}')
-                    return
 
-                try:
-                    print(f'File formatting: {file_path}')
-                    format_with_autopep8(file_path)
-                    # format_with_black(file_path)
-                except subprocess.CalledProcessError as e:
-                    print(f'Error while formatting file {file_path}: {e}')
+def format_with_black(file_path):
+    command = ['black', file_path]
+    subprocess.run(command, check=True)
 
-            if __name__ == '__main__':
-                # Determining the current directory
-                current_directory = Path(__file__).resolve().parent
 
-                # Current file name
-                current_script = Path(__file__).name
+def format_python_file(file_path):
+    if not os.path.exists(file_path):
+        print(f'File not found: {file_path}')
+        return
+    try:
+        print(f'File formatting: {file_path}')
+        format_with_autopep8(file_path)
+        # format_with_black(file_path)
+    except subprocess.CalledProcessError as e:
+        print(f'Error while formatting file {file_path}: {e}')
 
-                # Traversing all .py files in the current directory and its subdirectories
-                for py_file in current_directory.rglob('*.py'):
-                    # We skip the script itself
-                    if py_file.name != current_script:
-                        format_python_file(py_file)
+
+if __name__ == '__main__':
+    # Determining the current directory
+    current_directory = Path(__file__).resolve().parent
+
+    # Current file name
+    current_script = Path(__file__).name
+
+    # Traversing all .py files in the current directory and its subdirectories
+    for py_file in current_directory.rglob('*.py'):
+
+        # We skip the script itself
+        if py_file.name != current_script:
+            format_python_file(py_file)
             ''')
 
 
