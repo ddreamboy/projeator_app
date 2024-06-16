@@ -196,7 +196,7 @@ def format_with_autopep8(file_path):
 
 
 def format_with_black(file_path):
-    command = ['black', file_path]
+    command = ['black', '-l', '79', '-S', file_path]
     subprocess.run(command, check=True)
 
 
@@ -206,8 +206,8 @@ def format_python_file(file_path):
         return
     try:
         print(f'File formatting: {file_path}')
-        format_with_autopep8(file_path)
-        # format_with_black(file_path)
+        # format_with_autopep8(file_path)
+        format_with_black(file_path)
     except subprocess.CalledProcessError as e:
         print(f'Error while formatting file {file_path}: {e}')
 
@@ -225,7 +225,7 @@ if __name__ == '__main__':
         # We skip the script itself
         if py_file.name != current_script:
             format_python_file(py_file)
-            ''')
+''')
 
 
 def save_checkbox_value(e, label: str, value: bool):
