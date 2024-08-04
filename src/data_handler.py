@@ -192,12 +192,34 @@ from pathlib import Path
 
 def format_with_autopep8(file_path):
     command = ['autopep8', '--in-place', '--aggressive', file_path]
-    subprocess.run(command, check=True)
+    try:
+        subprocess.run(command, check=True)
+    except Exception:
+        install_autopep8(True, file_path)
 
 
 def format_with_black(file_path):
     command = ['black', '-l', '79', '-S', file_path]
+    try:
+        subprocess.run(command, check=True)
+    except Exception:
+        install_black(True, file_path)
+    
+    
+def install_black(format: bool = False, file_path=''):
+    command = ['pip', 'install', 'black']
     subprocess.run(command, check=True)
+
+    if format:
+        format_python_file(file_path)
+    
+
+def install_autopep8(format: bool = False, file_path=''):
+    command = ['pip', 'install', 'autopep8']
+    subprocess.run(command, check=True)
+    
+    if format:
+        format_python_file(file_path)
 
 
 def format_python_file(file_path):
